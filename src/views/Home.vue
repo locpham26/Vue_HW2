@@ -3,7 +3,7 @@
     <div class="head-container">
       <div class="text-wrapper">User management</div>
       <div>
-        <a-button class="user-btn show-btn" @click="fetchUsers()"
+        <a-button class="user-btn show-btn" @click="showAllUsers()"
           >Show All Users</a-button
         >
         <a-button class="user-btn add-btn" @click="addModalVisible = true"
@@ -11,7 +11,7 @@
         >
       </div>
     </div>
-    <a-table :columns="columns" :data-source="users" :pagination="false">
+    <a-table :columns="columns" :data-source="users" :pagination="false" v-if="showAll">
       <span slot="userOperations" slot-scope="record">
         <a-button class="user-btn edit-btn" @click="onEdit(record.key)"
           >Edit</a-button
@@ -119,6 +119,7 @@ export default {
         },
       ],
       users: [],
+      showAll: false,
       edited: null,
       addModalVisible: false,
       addUserForm: {
@@ -144,6 +145,10 @@ export default {
         };
       });
       this.users = userData;
+    },
+    showAllUsers() {
+      this.showAll = true;
+      this.fetchUsers()
     },
     async onConfirmAdd() {
       await saveUser({ id: "123456789", ...this.addUserForm });
