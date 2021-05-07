@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const userService = axios.create({
-  baseURL: "http://localhost:8081/users",
+  baseURL: "http://localhost:8081/books",
   headers: {
     "Access-Control-Allow-Origin": "*",
   },

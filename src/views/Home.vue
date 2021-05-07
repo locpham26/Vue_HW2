@@ -1,54 +1,60 @@
 <template>
   <div class="page-container">
     <div class="head-container">
-      <div class="text-wrapper">User management</div>
+      <div class="text-wrapper">Book Store</div>
       <div>
         <a-button class="user-btn show-btn" @click="showAllUsers()"
-          >Show All Users</a-button
+          >Show All Books</a-button
         >
         <a-button class="user-btn add-btn" @click="addModalVisible = true"
-          >Add a User</a-button
+          >Add a Book</a-button
         >
       </div>
     </div>
-    <a-table :columns="columns" :data-source="users" :pagination="false" v-if="showAll">
-      <span slot="userOperations" slot-scope="record">
-        <a-button class="user-btn edit-btn" @click="onEdit(record.key)"
+    <a-table
+      :columns="columns"
+      :data-source="users"
+      :pagination="false"
+      v-if="showAll"
+    >
+      <span slot="operations" slot-scope="record">
+        <a-button class="user-btn edit-btn" @click="onEdit(record.id)"
           >Edit</a-button
         >
-        <a-button class="user-btn delete-btn" @click="onDelete(record.key)"
+        <a-button class="user-btn delete-btn" @click="onDelete(record.id)"
           >Delete</a-button
         >
       </span></a-table
     >
     <a-modal
-      title="Edit a user"
+      title="Edit a book"
       :visible="editDialogVisible"
       okText="Save Changes"
       cancelText="Close"
       @cancel="editDialogVisible = false"
       @ok="onConfirmEdit"
     >
-      <a-row
-        type="flex"
-        align="middle"
-        v-if="edited"
-        :style="{ marginBottom: '10px' }"
-      >
-        <a-col :span="6">Name</a-col>
+      <a-row type="flex" align="middle" v-if="edited">
+        <a-col :span="6">Title</a-col>
         <a-col :span="18">
-          <div>{{ edited.name }}</div>
+          <a-input v-model="edited.title" />
         </a-col>
       </a-row>
       <a-row type="flex" align="middle" v-if="edited">
-        <a-col :span="6">Salary</a-col>
+        <a-col :span="6">Description</a-col>
         <a-col :span="18">
-          <a-input v-model="edited.salary" />
+          <a-input v-model="edited.description" />
+        </a-col>
+      </a-row>
+      <a-row type="flex" align="middle" v-if="edited">
+        <a-col :span="6">Price</a-col>
+        <a-col :span="18">
+          <a-input v-model="edited.price" />
         </a-col>
       </a-row>
     </a-modal>
     <a-modal
-      title="Add a user"
+      title="Add a book"
       :visible="addModalVisible"
       cancelText="Close"
       okText="Add"
@@ -57,21 +63,27 @@
     >
       <a-space direction="vertical" :size="8" :style="{ width: '100%' }">
         <a-row type="flex" align="middle" :style="{ marginBottom: '10px' }">
-          <a-col :span="4">Name</a-col>
+          <a-col :span="4">Title</a-col>
           <a-col :span="20">
-            <a-input v-model="addUserForm.name" />
+            <a-input v-model="addBookForm.title" />
           </a-col>
         </a-row>
         <a-row type="flex" align="middle" :style="{ marginBottom: '10px' }">
-          <a-col :span="4">Company</a-col>
+          <a-col :span="4">Description</a-col>
           <a-col :span="20">
-            <a-input v-model="addUserForm.company" />
+            <a-input v-model="addBookForm.description" />
           </a-col>
         </a-row>
         <a-row type="flex" align="middle" :style="{ marginBottom: '10px' }">
-          <a-col :span="4">Salary</a-col>
+          <a-col :span="4">Author</a-col>
           <a-col :span="20">
-            <a-input v-model="addUserForm.salary" />
+            <a-input v-model="addBookForm.author" />
+          </a-col>
+        </a-row>
+        <a-row type="flex" align="middle" :style="{ marginBottom: '10px' }">
+          <a-col :span="4">Price</a-col>
+          <a-col :span="20">
+            <a-input v-model="addBookForm.price" />
           </a-col>
         </a-row>
       </a-space>
@@ -88,44 +100,45 @@ export default {
     return {
       columns: [
         {
-          title: "Index",
-          dataIndex: "index",
-          key: "index",
+          title: "Id",
+          dataIndex: "id",
+          key: "id",
         },
         {
-          title: "Name",
-          dataIndex: "name",
-          key: "name",
+          title: "Title",
+          dataIndex: "title",
+          key: "title",
         },
         {
-          title: "IsActive",
-          dataIndex: "isActive",
-          key: "isActive",
+          title: "Description",
+          dataIndex: "description",
+          key: "description",
         },
         {
-          title: "Salary",
-          dataIndex: "salary",
-          key: "salary",
+          title: "Author",
+          dataIndex: "author",
+          key: "author",
         },
         {
-          title: "Company",
-          dataIndex: "company",
-          key: "company",
+          title: "Price",
+          dataIndex: "price",
+          key: "price",
         },
         {
           title: "Operations",
           key: "operations",
-          scopedSlots: { customRender: "userOperations" },
+          scopedSlots: { customRender: "operations" },
         },
       ],
       users: [],
       showAll: false,
       edited: null,
       addModalVisible: false,
-      addUserForm: {
-        name: "",
-        company: "",
-        salary: "",
+      addBookForm: {
+        title: "",
+        description: "",
+        author: "",
+        price: "",
       },
       editDialogVisible: false,
     };
@@ -134,24 +147,24 @@ export default {
     async fetchUsers() {
       console.log("fetching");
       const { data } = await findAllUsers();
-      const userData = data.data.map((user, i) => {
+      const userData = data.data.map((user) => {
         return {
           key: user.id,
-          index: i + 1,
-          name: user.name,
-          isActive: user.active ? "true" : "false",
-          salary: user.salary,
-          company: user.company,
+          id: user.id,
+          title: user.title,
+          description: user.description,
+          author: user.author,
+          price: user.price,
         };
       });
       this.users = userData;
     },
     showAllUsers() {
       this.showAll = true;
-      this.fetchUsers()
+      this.fetchUsers();
     },
     async onConfirmAdd() {
-      await saveUser({ id: "123456789", ...this.addUserForm });
+      await saveUser({ id: "123456789", ...this.addBookForm });
       this.fetchUsers();
       this.addModalVisible = false;
     },
@@ -166,11 +179,11 @@ export default {
     },
     async onConfirmEdit() {
       const updated = {
-        id: this.edited.key,
-        name: this.edited.name,
-        salary: this.edited.salary,
-        company: this.edited.company,
-        isActive: this.edited.isActive,
+        id: this.edited.id,
+        title: this.edited.title,
+        description: this.edited.description,
+        author: this.edited.author,
+        price: this.edited.price,
       };
       await updateUser(updated);
       this.fetchUsers();
